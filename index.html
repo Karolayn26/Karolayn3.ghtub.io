@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Picaderas Fortuna</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1724; --card:#0b1220; --accent:#f59e0b; --muted:#94a3b8; --glass: rgba(255,255,255,0.04);
+  --success:#10b981; --danger:#ef4444;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#071021 0%, #071a2a 60%);color:#e6eef8;min-height:100vh}
+.container{max-width:1100px;margin:36px auto;padding:20px}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#f97316);display:flex;align-items:center;justify-content:center;font-weight:800;color:#082032}
+h1{font-size:20px;margin:0}
+p.lead{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 420px;gap:20px;margin-top:24px}
+.card{background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.02));padding:18px;border-radius:14px;box-shadow:0 6px 24px rgba(2,6,23,0.6);margin-bottom:16px;}
+.card h2{margin:0 0 12px 0}
+.menu-list{display:grid;gap:12px}
+.item{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:10px;background:var(--glass);margin-bottom:8px;}
+.item .meta{display:flex;gap:12px;align-items:center}
+.item img{width:64px;height:48px;border-radius:8px;object-fit:cover}
+.item .title{font-weight:600}
+.item .desc{color:var(--muted);font-size:13px}
+.price{font-weight:700}
+.controls{display:flex;gap:8px;align-items:center}
+.qty{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:6px 10px;border-radius:8px;color:inherit;width:60px;text-align:center}
+button.btn{background:var(--accent);border:0;padding:8px 12px;border-radius:10px;color:#071021;font-weight:700;cursor:pointer}
+.summary{position:sticky;top:28px}
+.summary .line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.02)}
+.total{font-size:20px;font-weight:800;margin-top:8px}
+.actions{display:flex;gap:10px;margin-top:12px}
+.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
+footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
+.badge{background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:8px;font-weight:600;color:var(--muted)}
+.calc-row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+input[type=number], input[type=text], input[type=date], input[type=time]{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+#carrito{margin-top:12px}
+.carrito-item{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,0.05);}
+.carrito-item button{background:var(--danger);border:none;padding:2px 6px;border-radius:5px;color:#fff;cursor:pointer;font-size:12px}
+@media (max-width:980px){
+  .grid{grid-template-columns:1fr;}
+  .summary{position:relative;top:0}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="logo">PF</div>
+      <div>
+        <h1>Picaderas Fortuna</h1>
+        <p class="lead">Menú empresarial | Rápido, elegante y fácil de cotizar</p>
+      </div>
+    </div>
+    <div class="badge">Pedido rápido • 50 personas</div>
+  </header>
+
+  <main class="grid">
+    <section>
+      <!-- Menú y calculadora -->
+      <div class="card">
+        <h2>Menú disponible</h2>
+        <div class="menu-list" id="menuList"></div>
+      </div>
+
+      <div class="card">
+        <h2>Calculadora de costos</h2>
+        <div class="calc-row" style="gap:8px">
+          <div style="flex:1">
+            <label>Venta total cobrada (RD$)</label>
+            <input id="ventaTotal" type="number" value="2800" />
+          </div>
+          <div style="width:140px">
+            <label>Personas</label>
+            <input id="personas" type="number" value="50" />
+          </div>
+        </div>
+        <div class="note">Ajusta venta total o cantidad de personas para ver impacto en margen.</div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" id="recalc">Recalcular</button>
+          <button class="ghost" id="exportBtn">Exportar Excel</button>
+        </div>
+      </div>
+
+      <!-- Sección Agendar Pedido -->
+      <div class="card">
+        <h2>Agendar Pedido</h2>
+        <div class="calc-row" style="flex-wrap:wrap;gap:8px">
+          <div style="flex:1">
+            <label>Nombre o Empresa</label>
+            <input type="text" id="clienteNombre" placeholder="Ingrese su nombre o empresa" />
+          </div>
+          <div style="flex:1">
+            <label>Fecha del pedido</label>
+            <input type="date" id="fechaPedido" />
+          </div>
+          <div style="flex:1">
+            <label>Hora del pedido</label>
+            <input type="time" id="horaPedido" />
+          </div>
+        </div>
+
+        <h3 style="margin-top:12px">Combos tamaño normal</h3>
+        <div class="menu-list" id="comboList"></div>
+
+        <button class="btn" id="agendarPedido" style="margin-top:12px">Agendar Pedido</button>
+
+        <div id="historialPedidos" style="margin-top:12px;font-size:13px;color:var(--muted)"></div>
+      </div>
+    </section>
+
+    <aside class="summary card">
+      <h2>Resumen del pedido</h2>
+      <div id="carrito"></div>
+      <div class="line"><div>Unidades totales</div><div id="totalUnidades">—</div></div>
+      <div class="line"><div>Costos totales</div><div id="costosTotales">—</div></div>
+      <div class="line"><div>Ingreso total</div><div id="ingresoTotal">—</div></div>
+      <div class="line"><div>Ganancia neta</div><div id="gananciaNeta">—</div></div>
+      <div class="total">Margen: <span id="margen">—</span></div>
+      <div class="note">Gráficos dinámicos abajo (usa el botón Exportar para descargar tabla en Excel).</div>
+      <canvas id="pieChart" style="width:100%;height:220px;margin-top:12px;background:transparent"></canvas>
+    </aside>
+  </main>
+
+  <footer>© Picaderas Fortuna — Diseño ejecutivo • Ajusta precios y exporta reporte</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const baseMenu = [
+  {id:'quipe', title:'Mini quipe', desc:'Bocado clásico', qty:50, costUnit:0},
+  {id:'croq', title:'Mini croqueta', desc:'Crocante', qty:50, costUnit:0},
+  {id:'emp', title:'Mini empanada', desc:'2 unidades/plato', qty:100, costUnit:null, costPackage:74, empPerPackage:25},
+  {id:'combo1', title:'Combo Sorpresa', desc:'Mini quipe + Mini croqueta', qty:30, costUnit:0},
+  {id:'combo2', title:'Combo Empanadas', desc:'5 Mini empanadas', qty:40, costUnit:0},
+  {id:'combo3', title:'Combo Deluxe', desc:'Mini quipe + Mini croqueta + Mini empanada', qty:20, costUnit:0}
+];
+
+const combosNormales = [
+  {id:'comboN1', title:'Combo Familiar', desc:'12 quipes + 12 Croqueta+ 12 empanada', qty:0},
+  {id:'comboN2', title:'Combo Ejecutivo', desc:'12 quipe + 12  croqueta + 12 Enpanada', qty:0},
+  {id:'comboN3', title:'Combo Deluxe', desc:'13 quipe + 13  croqueta + 13  empanada', qty:0}
+];
+
+let costoQueso=245,costoPlatos=345,costoAceite=249;
+const menuList=document.getElementById('menuList');
+const comboList=document.getElementById('comboList');
+let carrito=[];
+let historialPedidos=[];
+
+function renderMenu(){
+  menuList.innerHTML='';
+  baseMenu.forEach(it=>{
+    const div=document.createElement('div'); div.className='item';
+    div.innerHTML=`
+      <div class='meta'>
+        
+          <div class='title'>${it.title}</div>
+          <div class='desc'>${it.desc}</div>
+        </div>
+      </div>
+      <div style='display:flex;flex-direction:column;align-items:flex-end'>
+        <div class='price'>—</div>
+        <div style='display:flex;gap:8px;margin-top:8px'>
+          <input class='qty' data-id='${it.id}' type='number' value='${it.qty}' min='0' />
+          <button class='btn' data-action='add'>Agregar</button>
+        </div>
+      </div>`;
+    menuList.appendChild(div);
+  });
+}
+renderMenu();
+
+function renderCombos(){
+  comboList.innerHTML='';
+  combosNormales.forEach(c=>{
+    const div=document.createElement('div'); div.className='item';
+    div.innerHTML=`
+      <div class='meta'>
+        <div>
+          <div class='title'>${c.title}</div>
+          <div class='desc'>${c.desc}</div>
+        </div>
+      </div>
+      <div style='display:flex;flex-direction:column;align-items:flex-end'>
+        <div style='display:flex;gap:8px;margin-top:8px'>
+          <input class='qty' data-id='${c.id}' type='number' value='0' min='0' />
+          <button class='btn' data-action='addCombo'>Agregar</button>
+        </div>
+      </div>`;
+    comboList.appendChild(div);
+  });
+}
+renderCombos();
+
+// Badge
+function actualizarBadge(){
+  const personas = Number(document.getElementById('personas').value)||0;
+  document.querySelector('.badge').textContent=`Pedido rápido • ${personas} persona${personas!==1?'s':''}`;
+}
+document.getElementById('personas').addEventListener('input',()=>{ actualizarBadge(); updateUI(); });
+
+// Carrito
+function agregarAlCarrito(id,cantidad){
+  if(cantidad<=0) return;
+  const item = baseMenu.find(x=>x.id===id) || combosNormales.find(x=>x.id===id);
+  if(!item) return;
+  const existe=carrito.find(x=>x.id===id);
+  if(existe){existe.qty=cantidad;}else{carrito.push({...item, qty:cantidad});}
+  actualizarCarrito();
+}
+
+function eliminarDelCarrito(id){
+  carrito=carrito.filter(x=>x.id!==id);
+  actualizarCarrito();
+}
+
+function actualizarCarrito(){
+  const carritoDiv=document.getElementById('carrito');
+  carritoDiv.innerHTML='';
+  let totalUnidades=0;
+  carrito.forEach(p=>{
+    totalUnidades+=p.qty;
+    const div=document.createElement('div'); div.className='carrito-item';
+    div.innerHTML=`<div>${p.title} x${p.qty}</div><button onclick="eliminarDelCarrito('${p.id}')">❌</button>`;
+    carritoDiv.appendChild(div);
+  });
+  document.getElementById('totalUnidades').textContent=totalUnidades;
+}
+
+// Eventos botones
+menuList.addEventListener('click', e=>{
+  if(e.target.matches('button[data-action="add"]')){
+    const input=e.target.closest('.item').querySelector('.qty');
+    agregarAlCarrito(input.dataset.id, Number(input.value)||0);
+  }
+});
+comboList.addEventListener('click', e=>{
+  if(e.target.matches('button[data-action="addCombo"]')){
+    const input=e.target.closest('.item').querySelector('.qty');
+    agregarAlCarrito(input.dataset.id, Number(input.value)||0);
+  }
+});
+
+// Agendar Pedido
+document.getElementById('agendarPedido').addEventListener('click', ()=>{
+  const nombre=document.getElementById('clienteNombre').value.trim();
+  const fecha=document.getElementById('fechaPedido').value;
+  const hora=document.getElementById('horaPedido').value;
+  if(!nombre || !fecha || !hora){ alert('Complete todos los campos del agendamiento'); return; }
+
+  const combos = combosNormales.map(c=>{
+    const qty = Number(document.querySelector(`#comboList input[data-id="${c.id}"]`).value)||0;
+    return {nombre:c.title, cantidad:qty};
+  }).filter(c=>c.cantidad>0);
+
+  const pedido={cliente:nombre, fecha, hora, combos};
+  historialPedidos.push(pedido);
+
+  document.getElementById('clienteNombre').value='';
+  document.getElementById('fechaPedido').value='';
+  document.getElementById('horaPedido').value='';
+  combosNormales.forEach(c=>document.querySelector(`#comboList input[data-id="${c.id}"]`).value=0);
+
+  mostrarHistorialPedidos();
+  alert(`Pedido agendado para ${nombre} el ${fecha} a las ${hora}.`);
+});
+
+function mostrarHistorialPedidos(){
+  const div=document.getElementById('historialPedidos');
+  if(historialPedidos.length===0){ div.innerHTML='No hay pedidos agendados.'; return; }
+  div.innerHTML='<strong>Historial de Pedidos:</strong><br>';
+  historialPedidos.forEach((p,i)=>{
+    div.innerHTML += `${i+1}. ${p.cliente} - ${p.fecha} ${p.hora} - Combos: ${p.combos.map(c=>c.nombre+' x'+c.cantidad).join(', ')}<br>`;
+  });
+}
+
+// Cálculos
+function computeCosts(ventaTotal=2800,personas=50){
+  let cantQuipes=baseMenu.find(i=>i.id==='quipe').qty;
+  let cantCroq=baseMenu.find(i=>i.id==='croq').qty;
+  let cantEmp=baseMenu.find(i=>i.id==='emp').qty;
+  const paqueteTam=baseMenu.find(i=>i.id==='emp').empPerPackage||25;
+  const costoPaquete=baseMenu.find(i=>i.id==='emp').costPackage||74;
+  const paquetes=Math.ceil(cantEmp/paqueteTam);
+  const costoEmpTotal=paquetes*costoPaquete;
+  const costoFijos=costoQueso+costoPlatos+costoAceite;
+  const costoTotal=costoEmpTotal+costoFijos;
+  const unidadesTotales=cantQuipes+cantCroq+cantEmp;
+  const precioUnit=ventaTotal/unidadesTotales;
+  const costoFijoUnit=costoFijos/unidadesTotales;
+  const costoUnitEmp=(costoEmpTotal/cantEmp)+costoFijoUnit;
+  const costoUnitQuipe=costoFijoUnit;
+  const costoUnitCroq=costoFijoUnit;
+  const ingresoTotal=ventaTotal;
+  const ganancia=ingresoTotal-costoTotal;
+  const margen=(ganancia/ingresoTotal)*100;
+  return {unidadesTotales,costoEmpTotal,costoFijos,costoTotal,precioUnit,ingresoTotal,ganancia,margen,
+    detalle:[{nombre:'Mini quipe',qty:cantQuipes,costoUnit:costoUnitQuipe},{nombre:'Mini croqueta',qty:cantCroq,costoUnit:costoUnitCroq},{nombre:'Mini empanada',qty:cantEmp,costoUnit:costoUnitEmp}]};
+}
+
+let chart;
+function drawChart(ganancia,costos){
+  const ctx=document.getElementById('pieChart').getContext('2d');
+  if(chart) chart.destroy();
+  chart=new Chart(ctx,{type:'pie',data:{labels:['Ganancia','Costos'],datasets:[{data:[ganancia,costos]}]},options:{plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:function(ctx){return ctx.label+': RD$ '+ctx.raw.toLocaleString();}}}}}});
+}
+
+function updateUI(){
+  const venta=Number(document.getElementById('ventaTotal').value);
+  const personas=Number(document.getElementById('personas').value);
+  const res=computeCosts(venta,personas);
+  document.getElementById('costosTotales').textContent='RD$ '+res.costoTotal.toFixed(2);
+  document.getElementById('ingresoTotal').textContent='RD$ '+res.ingresoTotal.toFixed(2);
+  document.getElementById('gananciaNeta').textContent='RD$ '+res.ganancia.toFixed(2);
+  document.getElementById('margen').textContent=res.margen.toFixed(2)+'%';
+  drawChart(res.ganancia,res.costoTotal);
+}
+
+document.getElementById('recalc').addEventListener('click',()=>updateUI());
+
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const res=computeCosts(Number(document.getElementById('ventaTotal').value),Number(document.getElementById('personas').value));
+  let csv='Producto,Cantidad,Costo unitario (RD$),Costo total (RD$),Ingreso estimado (RD$)\n';
+  res.detalle.forEach(d=>csv+=`${d.nombre},${d.qty},${d.costoUnit.toFixed(2)},${(d.costoUnit*d.qty).toFixed(2)},${(res.ingresoTotal*(d.qty/res.unidadesTotales)).toFixed(2)}\n`);
+  csv+=`Totales,,,${res.costoTotal.toFixed(2)},${res.ingresoTotal.toFixed(2)}\n`;
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='resumen_picaderas.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+
+updateUI();
+actualizarBadge();
+</script>
+</body>
+</html>
